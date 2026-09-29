@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EEE",
+    "EBE",
+    "EEE"
+  ],
+  "key": {
+    "E": { "item": "minecraft:ender_pearl" },
+    "B": { "item": "minecraft:bell" }
+  },
+  "result": { "item": "hookbellport:hook_bell", "count": 1 }
+}
