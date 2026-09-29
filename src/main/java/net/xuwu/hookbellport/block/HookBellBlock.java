@@ -19,9 +19,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -39,7 +39,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -48,7 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nullable;
 
 /** A self-contained, manually rung bell that calls nearby raiders. */
-public class HookBellBlock extends BaseEntityBlock {
+public class HookBellBlock extends Block implements EntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<BellAttachType> ATTACHMENT = BlockStateProperties.BELL_ATTACHMENT;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -87,9 +86,15 @@ public class HookBellBlock extends BaseEntityBlock {
         this.onHit(level, state, hit, owner instanceof Player player ? player : null, true);
     }
 
-    @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
+        return this.onHit(level, state, hit, player, true)
+                ? InteractionResult.sidedSuccess(level.isClientSide)
+                : InteractionResult.PASS;
+    }
+
+    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                             BlockHitResult hit) {
         return this.onHit(level, state, hit, player, true)
                 ? InteractionResult.sidedSuccess(level.isClientSide)
                 : InteractionResult.PASS;
@@ -259,13 +264,13 @@ public class HookBellBlock extends BaseEntityBlock {
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return createTickerHelper(type, HookBellContent.HOOK_BELL_ENTITY.get(),
-                level.isClientSide ? HookBellBlockEntity::clientTick : HookBellBlockEntity::serverTick);
+        if (type != HookBellContent.HOOK_BELL_ENTITY.get()) return null;
+        BlockEntityTicker<HookBellBlockEntity> ticker = level.isClientSide
+                ? HookBellBlockEntity::clientTick
+                : HookBellBlockEntity::serverTick;
+        return (BlockEntityTicker<T>) (BlockEntityTicker<?>) ticker;
     }
 
-    @Override
-    public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
-        return false;
-    }
 }
