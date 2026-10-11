@@ -145,9 +145,13 @@ public class HookBellBlockEntity extends BlockEntity {
         Vec3 bellCenter = Vec3.atCenterOf(origin);
         HitResult hit = living.level().clip(new ClipContext(living.getEyePosition(), bellCenter,
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, living));
-        // Hitting the bell itself still means the raider has a clear line of sight to it.
-        return hit.getType() == HitResult.Type.MISS || (hit instanceof net.minecraft.world.phys.BlockHitResult blockHit
+        // Raiders closer than 16 blocks are only called when the bell is obstructed from view.
+        // A clear ray (including one that reaches the bell's own collision shape) means they
+        // are close enough already and should not be teleported.
+        boolean canSeeBell = hit.getType() == HitResult.Type.MISS
+                || (hit instanceof net.minecraft.world.phys.BlockHitResult blockHit
                 && blockHit.getBlockPos().equals(origin));
+        return !canSeeBell;
     }
 
     private static void teleportRaiders(Level level, BlockPos origin, List<LivingEntity> entities, HookBellBlockEntity bell) {

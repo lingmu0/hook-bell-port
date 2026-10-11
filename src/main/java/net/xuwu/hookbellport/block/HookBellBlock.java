@@ -256,6 +256,12 @@ public class HookBellBlock extends Block implements EntityBlock {
         builder.add(FACING, ATTACHMENT, POWERED);
     }
 
+    @Override
+    public boolean triggerEvent(BlockState state, Level level, BlockPos pos, int id, int data) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        return blockEntity != null && blockEntity.triggerEvent(id, data);
+    }
+
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
