@@ -6,8 +6,8 @@
     "EEE"
   ],
   "key": {
-    "E": { "item": "minecraft:ender_pearl" },
-    "B": { "item": "minecraft:bell" }
+    "E": "minecraft:ender_pearl",
+    "B": "minecraft:bell"
   },
   "result": { "id": "hookbellport:hook_bell", "count": 1 }
 }

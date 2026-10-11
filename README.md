@@ -6,6 +6,7 @@
 
 - Minecraft 1.20.1，Forge
 - Minecraft 1.21.1，NeoForge
+- Minecraft 26.1.2，NeoForge 26.1.2.116 或更新的 26.1.2 构建，Java 25
 
 ## 用法
 
@@ -29,7 +30,7 @@
 .\gradlew.bat build
 ```
 
-分支 `mc-1.20.1` 基于 Forge 1.20.1 模板；分支 `mc-1.21.1` 基于 NeoForge 1.21.1 模板。
+分支 `mc-1.20.1` 为 Forge 1.20.1；分支 `mc-1.21.1` 为 NeoForge 1.21.1；分支 `mc-26.1.2` 为 NeoForge 26.1.2，构建需要 JDK 25。
 
 ## 许可与来源
 

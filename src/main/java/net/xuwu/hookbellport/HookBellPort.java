@@ -3,9 +3,7 @@ package net.xuwu.hookbellport;
 import net.xuwu.hookbellport.client.HookBellRenderer;
 import net.xuwu.hookbellport.content.HookBellConfig;
 import net.xuwu.hookbellport.content.HookBellContent;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -35,8 +33,8 @@ public class HookBellPort {
         }
     }
 
-    public static ResourceLocation location(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    public static Identifier location(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)

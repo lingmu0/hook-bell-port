@@ -108,7 +108,7 @@ public class HookBellBlockEntity extends BlockEntity {
             AABB searchBox = new AABB(worldPosition).inflate(MAX_RANGE);
             nearbyEntities = level.getEntitiesOfClass(LivingEntity.class, searchBox);
         }
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             for (LivingEntity living : nearbyEntities) {
                 if (living.isAlive() && !living.isRemoved()
                         && worldPosition.closerToCenterThan(living.position(), MAX_RANGE)) {
@@ -134,7 +134,7 @@ public class HookBellBlockEntity extends BlockEntity {
 
     private static boolean isRaiderWithinRange(BlockPos origin, LivingEntity living) {
         return living.isAlive() && !living.isRemoved() && isInCallRange(origin, living)
-                && living.getType().is(EntityTypeTags.RAIDERS)
+                && living.is(EntityTypeTags.RAIDERS)
                 && !living.hasCustomName() && !HookBellConfig.isBlacklisted(living.getType());
     }
 

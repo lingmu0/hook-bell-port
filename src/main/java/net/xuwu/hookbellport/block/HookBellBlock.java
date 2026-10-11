@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -17,8 +16,10 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -34,7 +35,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.MapColor;
@@ -44,11 +44,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /** A self-contained, manually rung bell that calls nearby raiders. */
 public class HookBellBlock extends Block implements EntityBlock {
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<BellAttachType> ATTACHMENT = BlockStateProperties.BELL_ATTACHMENT;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
@@ -65,15 +65,15 @@ public class HookBellBlock extends Block implements EntityBlock {
     private static final VoxelShape TO_SOUTH = Shapes.or(BELL_SHAPE, Block.box(7, 13, 3, 9, 15, 16));
     private static final VoxelShape CEILING_SHAPE = Shapes.or(BELL_SHAPE, Block.box(7, 13, 7, 9, 16, 9));
 
-    public HookBellBlock() {
-        super(Properties.of().forceSolidOn().mapColor(MapColor.COLOR_GREEN).requiresCorrectToolForDrops()
+    public HookBellBlock(Properties properties) {
+        super(properties.forceSolidOn().mapColor(MapColor.COLOR_GREEN).requiresCorrectToolForDrops()
                 .strength(5.0F).pushReaction(PushReaction.DESTROY).sound(SoundType.ANVIL));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH)
                 .setValue(ATTACHMENT, BellAttachType.FLOOR).setValue(POWERED, false));
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean moving) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean moving) {
         boolean powered = level.hasNeighborSignal(pos);
         if (powered != state.getValue(POWERED)) {
             level.setBlock(pos, state.setValue(POWERED, powered), 3);
@@ -86,17 +86,11 @@ public class HookBellBlock extends Block implements EntityBlock {
         this.onHit(level, state, hit, owner instanceof Player player ? player : null, true);
     }
 
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
-        return this.onHit(level, state, hit, player, true)
-                ? InteractionResult.sidedSuccess(level.isClientSide)
-                : InteractionResult.PASS;
-    }
-
+    @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                              BlockHitResult hit) {
         return this.onHit(level, state, hit, player, true)
-                ? InteractionResult.sidedSuccess(level.isClientSide)
+                ? InteractionResult.SUCCESS
                 : InteractionResult.PASS;
     }
 
@@ -132,7 +126,7 @@ public class HookBellBlock extends Block implements EntityBlock {
 
     public boolean attemptToRing(@Nullable Entity source, Level level, BlockPos pos, @Nullable Direction direction) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!level.isClientSide && blockEntity instanceof HookBellBlockEntity bell) {
+        if (!level.isClientSide() && blockEntity instanceof HookBellBlockEntity bell) {
             Direction ringDirection = direction == null ? level.getBlockState(pos).getValue(FACING) : direction;
             bell.onHit(ringDirection);
             level.playSound(null, pos, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 10.0F, 0.5F);
@@ -211,8 +205,9 @@ public class HookBellBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction side, BlockState neighbor, LevelAccessor level,
-                                  BlockPos pos, BlockPos neighborPos) {
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess scheduledTicks,
+                                  BlockPos pos, Direction side, BlockPos neighborPos, BlockState neighbor,
+                                  RandomSource random) {
         BellAttachType attachment = state.getValue(ATTACHMENT);
         Direction connected = getConnectedDirection(state).getOpposite();
         if (connected == side && !state.canSurvive(level, pos) && attachment != BellAttachType.DOUBLE_WALL) {
@@ -227,7 +222,7 @@ public class HookBellBlock extends Block implements EntityBlock {
                 return state.setValue(ATTACHMENT, BellAttachType.DOUBLE_WALL);
             }
         }
-        return super.updateShape(state, side, neighbor, level, pos, neighborPos);
+        return super.updateShape(state, level, scheduledTicks, pos, side, neighborPos, neighbor, random);
     }
 
     @Override
@@ -273,7 +268,7 @@ public class HookBellBlock extends Block implements EntityBlock {
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (type != HookBellContent.HOOK_BELL_ENTITY.get()) return null;
-        BlockEntityTicker<HookBellBlockEntity> ticker = level.isClientSide
+        BlockEntityTicker<HookBellBlockEntity> ticker = level.isClientSide()
                 ? HookBellBlockEntity::clientTick
                 : HookBellBlockEntity::serverTick;
         return (BlockEntityTicker<T>) (BlockEntityTicker<?>) ticker;
