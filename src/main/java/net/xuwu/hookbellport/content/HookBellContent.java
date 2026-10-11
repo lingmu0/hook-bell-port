@@ -1,28 +1,28 @@
 package net.xuwu.hookbellport.content;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.xuwu.hookbellport.HookBellPort;
 import net.xuwu.hookbellport.block.HookBellBlock;
 import net.xuwu.hookbellport.block.entity.HookBellBlockEntity;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public final class HookBellContent {
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(HookBellPort.MOD_ID);
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(HookBellPort.MOD_ID);
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, HookBellPort.MOD_ID);
+    public static final HookBellBlock HOOK_BELL = Registry.register(BuiltInRegistries.BLOCK,
+            HookBellPort.location("hook_bell"), new HookBellBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, HookBellPort.location("hook_bell")))));
+    public static final BlockItem HOOK_BELL_ITEM = Registry.register(BuiltInRegistries.ITEM,
+            HookBellPort.location("hook_bell"), new BlockItem(HOOK_BELL, new Item.Properties().setId(ResourceKey.create(Registries.ITEM, HookBellPort.location("hook_bell")))));
+    public static final BlockEntityType<HookBellBlockEntity> HOOK_BELL_ENTITY = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE, HookBellPort.location("hook_bell"),
+            FabricBlockEntityTypeBuilder.create(HookBellBlockEntity::new, HOOK_BELL).build());
 
-    public static final DeferredBlock<HookBellBlock> HOOK_BELL = BLOCKS.registerBlock("hook_bell", HookBellBlock::new);
-    public static final DeferredItem<BlockItem> HOOK_BELL_ITEM = ITEMS.registerSimpleBlockItem(HOOK_BELL);
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HookBellBlockEntity>> HOOK_BELL_ENTITY =
-            BLOCK_ENTITY_TYPES.register("hook_bell",
-                    () -> new BlockEntityType<>(HookBellBlockEntity::new, HOOK_BELL.get()));
-
-    private HookBellContent() {
-    }
+    public static void init() {}
+    private HookBellContent() {}
 }

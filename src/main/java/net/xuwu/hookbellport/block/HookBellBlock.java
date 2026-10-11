@@ -242,11 +242,6 @@ public class HookBellBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public PushReaction getPistonPushReaction(BlockState state) {
-        return PushReaction.DESTROY;
-    }
-
-    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, ATTACHMENT, POWERED);
     }
@@ -267,7 +262,7 @@ public class HookBellBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type != HookBellContent.HOOK_BELL_ENTITY.get()) return null;
+        if (type != HookBellContent.HOOK_BELL_ENTITY) return null;
         BlockEntityTicker<HookBellBlockEntity> ticker = level.isClientSide()
                 ? HookBellBlockEntity::clientTick
                 : HookBellBlockEntity::serverTick;

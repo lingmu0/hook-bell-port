@@ -37,7 +37,7 @@ public class HookBellBlockEntity extends BlockEntity {
     private int resonationTicks;
 
     public HookBellBlockEntity(BlockPos pos, BlockState state) {
-        super(HookBellContent.HOOK_BELL_ENTITY.get(), pos, state);
+        super(HookBellContent.HOOK_BELL_ENTITY, pos, state);
     }
 
     @Override

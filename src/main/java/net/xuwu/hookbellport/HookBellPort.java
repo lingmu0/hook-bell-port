@@ -1,50 +1,24 @@
 package net.xuwu.hookbellport;
 
-import net.xuwu.hookbellport.client.HookBellRenderer;
-import net.xuwu.hookbellport.content.HookBellConfig;
-import net.xuwu.hookbellport.content.HookBellContent;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.xuwu.hookbellport.content.HookBellConfig;
+import net.xuwu.hookbellport.content.HookBellContent;
 
-@Mod(HookBellPort.MOD_ID)
-public class HookBellPort {
+public final class HookBellPort implements ModInitializer {
     public static final String MOD_ID = "hookbellport";
 
-    public HookBellPort(IEventBus modBus, ModContainer modContainer) {
-        HookBellContent.BLOCKS.register(modBus);
-        HookBellContent.BLOCK_ENTITY_TYPES.register(modBus);
-        HookBellContent.ITEMS.register(modBus);
-        modBus.addListener(this::addCreative);
-        modContainer.registerConfig(ModConfig.Type.COMMON, HookBellConfig.SPEC);
-    }
-
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(HookBellContent.HOOK_BELL_ITEM.get());
-        }
+    @Override
+    public void onInitialize() {
+        HookBellConfig.load();
+        HookBellContent.init();
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS)
+                .register(entries -> entries.accept(HookBellContent.HOOK_BELL_ITEM));
     }
 
     public static Identifier location(String path) {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);
-    }
-
-    @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
-    public static final class ClientModEvents {
-        @SubscribeEvent
-        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-            event.registerBlockEntityRenderer(HookBellContent.HOOK_BELL_ENTITY.get(), HookBellRenderer::new);
-        }
-
-        private ClientModEvents() {
-        }
     }
 }
