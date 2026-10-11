@@ -44,7 +44,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /** A self-contained, manually rung bell that calls nearby raiders. */
 public class HookBellBlock extends Block implements EntityBlock {
@@ -247,13 +247,14 @@ public class HookBellBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public PushReaction getPistonPushReaction(BlockState state) {
-        return PushReaction.DESTROY;
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING, ATTACHMENT, POWERED);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, ATTACHMENT, POWERED);
+    public boolean triggerEvent(BlockState state, Level level, BlockPos pos, int id, int data) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        return blockEntity != null && blockEntity.triggerEvent(id, data);
     }
 
     @Nullable
@@ -266,7 +267,7 @@ public class HookBellBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type != HookBellContent.HOOK_BELL_ENTITY.get()) return null;
+        if (type != HookBellContent.HOOK_BELL_ENTITY) return null;
         BlockEntityTicker<HookBellBlockEntity> ticker = level.isClientSide
                 ? HookBellBlockEntity::clientTick
                 : HookBellBlockEntity::serverTick;
