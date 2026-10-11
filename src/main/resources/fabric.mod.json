@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "hookbellport",
+  "version": "${version}",
+  "name": "召集之钟：移植 / Hook Bell Port",
+  "description": "Standalone Hook Bell from Goety: manually ring to call nearby unnamed raiders.",
+  "authors": [
+    "lingmu"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "icon": "assets/hookbellport/textures/item/hook_bell.png",
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/hook-bell-port",
+    "sources": "https://github.com/lingmu0/hook-bell-port",
+    "issues": "https://github.com/lingmu0/hook-bell-port/issues"
+  },
+  "entrypoints": {
+    "main": [
+      "net.xuwu.hookbellport.HookBellPort"
+    ],
+    "client": [
+      "net.xuwu.hookbellport.client.HookBellClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
